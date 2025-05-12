@@ -13,6 +13,10 @@ if [[ "${PROTOC_VERSION}" == "" ]] || [[ "${PROTOC_VERSION}" < 3.15.0 ]]; then
 fi
 
 # "--bin" can be specified multiple times for each directory in "bin/*" or workspaces
+# 设置 RUSTFLAGS 环境变量，禁用一些可能导致问题的功能
+export RUSTFLAGS="-C target-feature=-crt-static"
+
+# 使用 --no-default-features 避免一些可能导致问题的功能
 cargo build \
 --release \
 --bin timestampvm

@@ -11,7 +11,7 @@ pub fn get_network_runner_grpc_endpoint() -> (String, bool) {
 
 #[must_use]
 pub fn get_network_runner_enable_shutdown() -> bool {
-    matches!(std::env::var("NETWORK_RUNNER_ENABLE_SHUTDOWN"), Ok(_))
+    std::env::var("NETWORK_RUNNER_ENABLE_SHUTDOWN").is_ok()
 }
 
 #[must_use]

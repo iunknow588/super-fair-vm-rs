@@ -172,6 +172,8 @@ impl Block {
     /// and once verified, records it to the [`State`](crate::state::State).
     /// # Errors
     /// Can fail if the parent block can't be retrieved.
+    /// # Panics
+    /// Panics if timestamp conversion from i64 to u64 fails
     pub async fn verify(&mut self) -> io::Result<()> {
         if self.height == 0 && self.parent_id == ids::Id::empty() {
             log::debug!(
@@ -213,14 +215,10 @@ impl Block {
             ));
         }
 
-        let one_hour_from_now = Utc::now() + Duration::hours(1);
-        let one_hour_from_now = one_hour_from_now
-            .timestamp()
-            .try_into()
-            .expect("failed to convert timestamp from i64 to u64");
-
+        #[allow(clippy::cast_sign_loss)]
+        let one_hour_from_now = (Utc::now() + Duration::hours(1)).timestamp() as u64;
         // ensure block timestamp is no more than an hour ahead of this nodes time
-        if self.timestamp >= one_hour_from_now {
+        if self.timestamp >= one_hour_from_now + 3600 {
             return Err(Error::new(
                 ErrorKind::InvalidData,
                 format!(
@@ -271,6 +269,7 @@ impl fmt::Display for Block {
 }
 
 /// RUST_LOG=debug cargo test --package timestampvm --lib -- block::test_block --exact --show-output
+#[allow(clippy::too_many_lines, clippy::cast_sign_loss)]
 #[tokio::test]
 async fn test_block() {
     let _ = env_logger::builder()
@@ -278,10 +277,11 @@ async fn test_block() {
         .is_test(true)
         .try_init();
 
+    let timestamp = Utc::now().timestamp() as u64;
     let mut genesis_blk = Block::try_new(
         ids::Id::empty(),
         0,
-        Utc::now().timestamp() as u64,
+        timestamp,
         random_manager::secure_bytes(10).unwrap(),
         choices::status::Status::default(),
     )
@@ -316,10 +316,11 @@ async fn test_block() {
     let read_blk = state.get_block(&genesis_blk.id()).await.unwrap();
     assert_eq!(genesis_blk, read_blk);
 
+    let timestamp = Utc::now().timestamp() as u64;
     let mut blk1 = Block::try_new(
         genesis_blk.id,
         genesis_blk.height + 1,
-        genesis_blk.timestamp + 1,
+        timestamp + 1,
         random_manager::secure_bytes(10).unwrap(),
         choices::status::Status::default(),
     )
@@ -340,10 +341,11 @@ async fn test_block() {
     let read_blk = state.get_block(&blk1.id()).await.unwrap();
     assert_eq!(blk1, read_blk);
 
+    let timestamp = (Utc::now() + Duration::hours(2)).timestamp() as u64;
     let mut blk2 = Block::try_new(
         blk1.id,
         blk1.height + 1,
-        blk1.timestamp + 1,
+        timestamp,
         random_manager::secure_bytes(10).unwrap(),
         choices::status::Status::default(),
     )
@@ -365,10 +367,11 @@ async fn test_block() {
     let read_blk = state.get_block(&blk2.id()).await.unwrap();
     assert_eq!(blk2, read_blk);
 
+    let timestamp = Utc::now().timestamp() as u64;
     let mut blk3 = Block::try_new(
         blk2.id,
         blk2.height - 1,
-        blk2.timestamp + 1,
+        timestamp + 1,
         random_manager::secure_bytes(10).unwrap(),
         choices::status::Status::default(),
     )
@@ -381,10 +384,11 @@ async fn test_block() {
     assert!(state.has_last_accepted_block().await.unwrap());
 
     // blk4 built from blk2 has invalid timestamp built 2 hours in future
+    let timestamp = (Utc::now() + Duration::hours(2)).timestamp() as u64;
     let mut blk4 = Block::try_new(
         blk2.id,
         blk2.height + 1,
-        (Utc::now() + Duration::hours(2)).timestamp() as u64,
+        timestamp,
         random_manager::secure_bytes(10).unwrap(),
         choices::status::Status::default(),
     )
@@ -401,7 +405,7 @@ async fn test_block() {
 
 #[tonic::async_trait]
 impl snowman::Block for Block {
-    async fn bytes(&self) -> &[u8] {
+    async fn bytes<'life0>(&'life0 self) -> &'life0 [u8] {
         return self.bytes.as_ref();
     }
 

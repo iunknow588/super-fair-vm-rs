@@ -9,7 +9,7 @@ use std::{
 use avalanche_network_runner_sdk::{BlockchainSpec, Client, GlobalConfig, StartRequest};
 use avalanche_types::{ids, jsonrpc::client::info as avalanche_sdk_info, subnet};
 
-const AVALANCHEGO_VERSION: &str = "v1.10.9";
+const AVALANCHEGO_VERSION: &str = "v1.13.0";
 
 #[tokio::test]
 async fn e2e() {
@@ -148,7 +148,7 @@ async fn e2e() {
                     true
                 }
                 Err(e) => {
-                    log::warn!("not healthy yet {}", e);
+                    log::warn!("not healthy yet {e}");
                     false
                 }
             }

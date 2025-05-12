@@ -48,6 +48,8 @@ See [`bin/timestampvm`](timestampvm/src/bin/timestampvm/main.rs) for plugin impl
 | v0.0.13 | v1.10.0 |
 | v0.0.14..17 | v1.10.1 |
 | v0.0.18 | v1.10.9+ |
+| v0.0.20 | v1.13.0 |
+| v0.0.21 | v1.13.0 (支持 RPCChainVM 协议版本 31) |
 
 ## Example
 

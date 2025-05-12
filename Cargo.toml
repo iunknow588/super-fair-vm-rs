@@ -1,7 +1,8 @@
 [workspace]
 members = [
-    "tests/e2e",
     "timestampvm",
+    "tests/e2e",
 ]
-
 resolver = "2"
+
+# 注释掉了自定义 avalanche-types 依赖，使用标准版本

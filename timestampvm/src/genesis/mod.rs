@@ -50,8 +50,10 @@ impl Genesis {
     /// Persists the genesis to a file.
     /// # Errors
     /// Fails if the file can't be created, written to, or if `self` can't be serialized
+    /// # Panics
+    /// Panics if the provided file path is invalid
     pub fn sync(&self, file_path: &str) -> io::Result<()> {
-        log::info!("syncing genesis to '{}'", file_path);
+        log::info!("syncing genesis to '{file_path}'");
 
         let path = Path::new(file_path);
         let parent_dir = path.parent().expect("Invalid path");

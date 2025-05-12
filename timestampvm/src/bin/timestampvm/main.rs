@@ -1,7 +1,8 @@
+pub mod custom_vm_id;
 pub mod genesis;
 pub mod vm_id;
 
-use std::io;
+use std::{env, io};
 
 use avalanche_types::subnet;
 use clap::{crate_version, Command};
@@ -15,7 +16,11 @@ async fn main() -> io::Result<()> {
     let matches = Command::new(APP_NAME)
         .version(crate_version!())
         .about("Timestamp Vm")
-        .subcommands(vec![genesis::command(), vm_id::command()])
+        .subcommands(vec![
+            genesis::command(),
+            vm_id::command(),
+            custom_vm_id::command(),
+        ])
         .get_matches();
 
     // ref. https://github.com/env-logger-rs/env_logger/issues/47
@@ -40,10 +45,23 @@ async fn main() -> io::Result<()> {
             Ok(())
         }
 
+        Some((custom_vm_id::NAME, sub_matches)) => {
+            let vm_id = sub_matches.get_one::<String>("VM_ID").expect("required");
+            println!("{vm_id}");
+
+            Ok(())
+        }
+
         _ => {
             log::info!("starting timestampvm");
 
             let (stop_ch_tx, stop_ch_rx): (Sender<()>, Receiver<()>) = broadcast::channel(1);
+
+            // 使用协议版本 39
+            log::info!("using RPCChainVM protocol version 39");
+
+            // 设置环境变量，指定协议版本为 39
+            env::set_var("AVALANCHEGO_VMPROTO_VERSION", "39");
             let vm_server = subnet::rpc::vm::server::Server::new(vm::Vm::new(), stop_ch_tx);
             subnet::rpc::vm::serve(vm_server, stop_ch_rx).await
         }

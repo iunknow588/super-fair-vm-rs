@@ -50,8 +50,8 @@ pub struct LastAcceptedResponse {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct GetBlockArgs {
-    /// TODO: use "ids::Id"
-    /// if we use "ids::Id", it fails with:
+    /// TODO: use `ids::Id`
+    /// if we use `ids::Id`, it fails with:
     /// "Invalid params: invalid type: string \"g25v3qDyAaHfR7kBev8tLUHouSgN5BJuZjy1BYS1oiHd2vres\", expected a borrowed string."
     pub id: String,
 }
@@ -119,7 +119,7 @@ where
 
     fn get_block(&self, args: GetBlockArgs) -> BoxFuture<Result<GetBlockResponse>> {
         let blk_id = ids::Id::from_str(&args.id).unwrap();
-        log::info!("get_block called for {}", blk_id);
+        log::info!("get_block called for {blk_id}");
 
         let vm = self.vm.clone();
 

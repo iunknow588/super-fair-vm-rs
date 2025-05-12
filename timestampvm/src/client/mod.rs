@@ -28,8 +28,10 @@ pub struct PingResponse {
 pub async fn ping(http_rpc: &str, url_path: &str) -> io::Result<PingResponse> {
     log::info!("ping {http_rpc} with {url_path}");
 
-    let mut data = jsonrpc::RequestWithParamsArray::default();
-    data.method = String::from("timestampvm.ping");
+    let data = jsonrpc::RequestWithParamsArray {
+        method: String::from("timestampvm.ping"),
+        ..Default::default()
+    };
 
     let d = data.encode_json()?;
     let rb = http_manager::post_non_tls(http_rpc, url_path, &d).await?;
@@ -58,8 +60,10 @@ pub struct LastAcceptedResponse {
 pub async fn last_accepted(http_rpc: &str, url_path: &str) -> io::Result<LastAcceptedResponse> {
     log::info!("last_accepted {http_rpc} with {url_path}");
 
-    let mut data = jsonrpc::RequestWithParamsArray::default();
-    data.method = String::from("timestampvm.lastAccepted");
+    let data = jsonrpc::RequestWithParamsArray {
+        method: String::from("timestampvm.lastAccepted"),
+        ..Default::default()
+    };
 
     let d = data.encode_json()?;
     let rb = http_manager::post_non_tls(http_rpc, url_path, &d).await?;
@@ -92,8 +96,10 @@ pub async fn get_block(
 ) -> io::Result<GetBlockResponse> {
     log::info!("get_block {http_rpc} with {url_path}");
 
-    let mut data = jsonrpc::RequestWithParamsHashMapArray::default();
-    data.method = String::from("timestampvm.getBlock");
+    let mut data = jsonrpc::RequestWithParamsHashMapArray {
+        method: String::from("timestampvm.getBlock"),
+        ..Default::default()
+    };
 
     let mut m = HashMap::new();
     m.insert("id".to_string(), id.to_string());
@@ -133,8 +139,10 @@ pub async fn propose_block(
 ) -> io::Result<ProposeBlockResponse> {
     log::info!("propose_block {http_rpc} with {url_path}");
 
-    let mut data = jsonrpc::RequestWithParamsHashMapArray::default();
-    data.method = String::from("timestampvm.proposeBlock");
+    let mut data = jsonrpc::RequestWithParamsHashMapArray {
+        method: String::from("timestampvm.proposeBlock"),
+        ..Default::default()
+    };
 
     let mut m = HashMap::new();
     m.insert(

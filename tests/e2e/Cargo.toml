@@ -2,7 +2,7 @@
 name = "e2e"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.70"
+rust-version = "1.86.0"
 publish = false
 description = "e2e tests for timestampvm"
 license = "BSD-3-Clause"
@@ -13,7 +13,7 @@ homepage = "https://avax.network"
 [dev-dependencies]
 avalanche-installer = "0.0.77"
 avalanche-network-runner-sdk = "0.3.4" # https://crates.io/crates/avalanche-network-runner-sdk
-avalanche-types = { version = "0.1.5", features = ["jsonrpc_client", "subnet"] } # https://crates.io/crates/avalanche-types
+avalanche-types = { path = "/home/lc/avalanche-rs-main/crates/avalanche-types", features = ["jsonrpc_client", "subnet"] } 
 env_logger = "0.11.3"
 log = "0.4.21"
 random-manager = "0.0.5"

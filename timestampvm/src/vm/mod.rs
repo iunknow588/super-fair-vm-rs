@@ -22,7 +22,7 @@ use avalanche_types::{
         self,
         rpc::{
             context::Context,
-            database::{manager::DatabaseManager, BoxedDatabase},
+            database::manager::DatabaseManager,
             health::Checkable,
             snow::{
                 self,
@@ -44,6 +44,9 @@ use semver::Version;
 use tokio::sync::{mpsc::Sender, RwLock};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// RPC链VM协议版本
+pub const RPC_CHAIN_VM_PROTOCOL_VERSION: u32 = 39;
 
 /// Limits how much data a user can propose.
 pub const PROPOSE_LIMIT_BYTES: usize = 1024 * 1024;
@@ -128,7 +131,7 @@ where
             to_engine
                 .send(snow::engine::common::message::Message::PendingTxs)
                 .await
-                .unwrap_or_else(|e| log::warn!("dropping message to consensus engine: {}", e));
+                .unwrap_or_else(|e| log::warn!("dropping message to consensus engine: {e}"));
 
             log::info!("notified block ready!");
         } else {
@@ -221,7 +224,7 @@ where
     async fn initialize(
         &mut self,
         ctx: Option<Context<Self::ValidatorState>>,
-        db_manager: BoxedDatabase,
+        db_manager: Box<dyn subnet::rpc::database::Database + Send + Sync>,
         genesis_bytes: &[u8],
         _upgrade_bytes: &[u8],
         _config_bytes: &[u8],
@@ -241,6 +244,7 @@ where
         let genesis = Genesis::from_slice(genesis_bytes)?;
         vm_state.genesis = genesis;
 
+        // 使用传入的数据库实例
         let state = state::State {
             db: Arc::new(RwLock::new(db_manager)),
             verified_blocks: Arc::new(RwLock::new(HashMap::new())),
