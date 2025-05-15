@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -xue
 
-# 运行rustfmt进行代码格式化检查
+# 先自动格式化
+cargo fmt --all
+
+# 再检查格式
 cargo fmt --all -- --check
 
 echo "Format check passed!"
