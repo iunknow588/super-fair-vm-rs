@@ -1,0 +1,23 @@
+[package]
+name = "fair-vm-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Super Fair VM Team"]
+license = "Apache-2.0"
+
+[dependencies]
+fair-vm = { path = "../fair-vm" }
+fair-vm-sdk = { path = "../fair-vm-sdk" }
+tokio = { version = "1.36", features = ["full", "macros", "rt-multi-thread"] }
+clap = { version = "4.5", features = ["derive"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+async-trait = { workspace = true }
+ethers = { workspace = true }
+rand = { workspace = true }
+secp256k1 = { workspace = true }
+hex = { workspace = true }
+bytes = { workspace = true } 

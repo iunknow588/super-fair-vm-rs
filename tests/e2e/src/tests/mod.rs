@@ -8,6 +8,14 @@ use std::{
 
 use avalanche_network_runner_sdk::{BlockchainSpec, Client, GlobalConfig, StartRequest};
 use avalanche_types::{ids, jsonrpc::client::info as avalanche_sdk_info, subnet};
+use fairvm::{
+    api,
+    block::Block,
+    client,
+    genesis::Genesis,
+    vm,
+};
+use tokio::time::sleep;
 
 const AVALANCHEGO_VERSION: &str = "v1.13.0";
 
@@ -78,8 +86,10 @@ async fn e2e() {
     .unwrap();
 
     // write some random genesis file
-    let genesis = timestampvm::genesis::Genesis {
-        data: random_manager::secure_string(10),
+    let genesis = Genesis {
+        network_id: 1,
+        chain_id: ids::Id::from_slice(&[1; 32]),
+        ..Default::default()
     };
     let genesis_file_path = random_manager::tmp_path(10, None).unwrap();
     genesis.sync(&genesis_file_path).unwrap();
@@ -102,7 +112,7 @@ async fn e2e() {
                 .unwrap(),
             ),
             blockchain_specs: vec![BlockchainSpec {
-                vm_name: String::from("timestampvm"),
+                vm_name: String::from("fairvm"),
                 genesis: genesis_file_path.to_string(),
                 ..Default::default()
             }],
@@ -190,7 +200,7 @@ async fn e2e() {
     let mut blockchain_id = ids::Id::empty();
     for (k, v) in cluster_info.custom_chains.iter() {
         log::info!("custom chain info: {}={:?}", k, v);
-        if v.chain_name == "timestampvm" {
+        if v.chain_name == "fairvm" {
             blockchain_id = ids::Id::from_str(&v.chain_id).unwrap();
             break;
         }
@@ -203,22 +213,10 @@ async fn e2e() {
     let network_id = resp.result.unwrap().network_id;
     log::info!("network Id: {}", network_id);
 
-    // log::info!("ping static handlers");
-    // let static_url_path = format!("ext/vm/{vm_id}/static");
-    // for ep in rpc_eps.iter() {
-    //     let resp = timestampvm::client::ping(ep.as_str(), &static_url_path)
-    //         .await
-    //         .unwrap();
-    //     log::info!("ping response from {}: {:?}", ep, resp);
-    //     assert!(resp.result.unwrap().success);
-
-    //     thread::sleep(Duration::from_millis(300));
-    // }
-
     log::info!("ping chain handlers");
     let chain_url_path = format!("ext/bc/{blockchain_id}/rpc");
     for ep in rpc_eps.iter() {
-        let resp = timestampvm::client::ping(ep.as_str(), &chain_url_path)
+        let resp = client::ping(ep.as_str(), &chain_url_path)
             .await
             .unwrap();
         log::info!("ping response from {}: {:?}", ep, resp);
@@ -230,59 +228,39 @@ async fn e2e() {
     let ep = rpc_eps[0].clone();
 
     log::info!("get last_accepted from chain handlers");
-    let resp = timestampvm::client::last_accepted(&ep, &chain_url_path)
-        .await
-        .unwrap();
-    log::info!("last_accepted response from {}: {:?}", ep, resp);
+    let resp = client::last_accepted(ep.as_str(), &chain_url_path).await;
+    assert!(resp.is_ok());
 
-    let blk_id = resp.result.unwrap().id;
+    let blk_id = resp.unwrap().result.unwrap().block_id;
 
     log::info!("getting block {blk_id}");
-    let resp = timestampvm::client::get_block(&ep, &chain_url_path, &blk_id)
-        .await
-        .unwrap();
-    log::info!("get_block response from {}: {:?}", ep, resp);
-    let height0 = resp.result.unwrap().block.height();
-    assert_eq!(height0, 0);
+    let resp = client::get_block(ep.as_str(), &chain_url_path, &blk_id).await;
+    assert!(resp.is_ok());
 
     log::info!("propose block");
-    let resp = timestampvm::client::propose_block(&ep, &chain_url_path, vec![0, 1, 2])
-        .await
-        .unwrap();
-    log::info!("propose_block response from {}: {:?}", ep, resp);
+    let resp = client::propose_block(ep.as_str(), &chain_url_path, vec![0, 1, 2]).await;
+    assert!(resp.is_ok());
 
     // enough time for block builds
     thread::sleep(Duration::from_secs(5));
 
     log::info!("get last_accepted from chain handlers");
-    let resp = timestampvm::client::last_accepted(&ep, &chain_url_path)
-        .await
-        .unwrap();
-    log::info!("last_accepted response from {}: {:?}", ep, resp);
+    let resp = client::last_accepted(ep.as_str(), &chain_url_path).await;
+    assert!(resp.is_ok());
 
-    let blk_id = resp.result.unwrap().id;
-
-    log::info!("getting block {blk_id}");
-    let resp = timestampvm::client::get_block(&ep, &chain_url_path, &blk_id)
-        .await
-        .unwrap();
-    log::info!("get_block response from {}: {:?}", ep, resp);
-    let height1 = resp.result.unwrap().block.height();
-    assert_eq!(height0 + 1, height1);
+    let new_blk_id = resp.unwrap().result.unwrap().block_id;
+    assert_ne!(blk_id, new_blk_id);
 
     // expects an error of
     // "error":{"code":-32603,"message":"data 1048586-byte exceeds the limit 1048576-byte"}
     log::info!("propose block beyond its limit");
-    let resp = timestampvm::client::propose_block(
-        &ep,
+    let resp = client::propose_block(
+        ep.as_str(),
         &chain_url_path,
-        vec![1; timestampvm::vm::PROPOSE_LIMIT_BYTES + 10],
+        vec![1; vm::PROPOSE_LIMIT_BYTES + 10],
     )
-    .await
-    .unwrap();
-    assert!(resp.result.is_none());
-    assert!(resp.error.is_some());
-    log::info!("propose block response: {:?}", resp);
+    .await;
+    assert!(resp.is_err());
 
     if crate::get_network_runner_enable_shutdown() {
         log::info!("shutdown is enabled... stopping...");

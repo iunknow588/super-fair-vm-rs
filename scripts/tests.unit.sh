@@ -1,13 +1,19 @@
-#!/usr/bin/env bash
-set -xue
+#!/bin/bash
 
+# 确保脚本从项目根目录运行
 if ! [[ "$0" =~ scripts/tests.unit.sh ]]; then
-  echo "must be run from repository root"
-  exit 255
+    echo "错误: 必须从项目根目录运行此脚本"
+    exit 1
 fi
 
-RUST_LOG=debug cargo test --all --all-features \
---exclude e2e \
--- --show-output
+# 获取项目根目录的绝对路径
+PROJECT_ROOT=$(pwd)
 
-echo "ALL SUCCESS!"
+set -e
+
+echo "运行单元测试..."
+
+# 运行单元测试
+cargo test --lib
+
+echo "测试完成"

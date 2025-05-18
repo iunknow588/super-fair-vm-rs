@@ -1,0 +1,44 @@
+let tx = Transaction {
+    from: tx.from.into(),
+    to: tx.to.map(Into::into),
+    value: tx.value.into(),
+    data: tx.data.into(),
+    nonce: tx.nonce.into(),
+    gas_limit: tx.gas_limit.into(),
+    gas_price: tx.gas_price.into(),
+    chain_id: tx.chain_id.into(),
+    v: tx.v.into(),
+    r: tx.r.into(),
+    s: tx.s.into(),
+};
+
+let receipt = TransactionReceipt {
+    transaction_hash: receipt.transaction_hash.into(),
+    transaction_index: receipt.transaction_index.into(),
+    block_hash: receipt.block_hash.into(),
+    block_number: receipt.block_number.into(),
+    from: receipt.from.into(),
+    to: receipt.to.map(Into::into),
+    cumulative_gas_used: receipt.cumulative_gas_used.into(),
+    gas_used: receipt.gas_used.into(),
+    contract_address: receipt.contract_address.map(Into::into),
+    logs: receipt.logs.into_iter().map(|log| Log {
+        address: log.address.into(),
+        topics: log.topics.into_iter().map(Into::into).collect(),
+        data: log.data.into(),
+        block_hash: log.block_hash.into(),
+        block_number: log.block_number.into(),
+        transaction_hash: log.transaction_hash.into(),
+        transaction_index: log.transaction_index.into(),
+        log_index: log.log_index.into(),
+        removed: log.removed,
+    }).collect(),
+    status: receipt.status.into(),
+    effective_gas_price: receipt.effective_gas_price.into(),
+};
+
+let address: H160 = self.address.into();
+let balance: U256 = self.balance.into();
+let block_number: U256 = self.block_number.into();
+let block_hash: H256 = self.block_hash.into();
+let tx_hash: H256 = self.tx_hash.into(); 

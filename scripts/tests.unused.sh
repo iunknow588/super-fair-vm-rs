@@ -1,14 +1,19 @@
-#!/usr/bin/env bash
-set -xue
+#!/bin/bash
 
+# 确保脚本从项目根目录运行
 if ! [[ "$0" =~ scripts/tests.unused.sh ]]; then
-  echo "must be run from repository root"
-  exit 255
+    echo "错误: 必须从项目根目录运行此脚本"
+    exit 1
 fi
 
-# cargo install cargo-udeps --locked
-# https://github.com/est31/cargo-udeps
-cargo install cargo-udeps --locked
-cargo +nightly udeps
+# 获取项目根目录的绝对路径
+PROJECT_ROOT=$(pwd)
 
-echo "ALL SUCCESS!"
+set -e
+
+echo "检查未使用的依赖..."
+
+# 检查未使用的依赖
+cargo udeps
+
+echo "检查完成"

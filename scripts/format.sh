@@ -1,10 +1,19 @@
-#!/usr/bin/env bash
-set -xue
+#!/bin/bash
 
-# 先自动格式化
-cargo fmt --all
+# 确保脚本从项目根目录运行
+if ! [[ "$0" =~ scripts/format.sh ]]; then
+    echo "错误: 必须从项目根目录运行此脚本"
+    exit 1
+fi
 
-# 再检查格式
-cargo fmt --all -- --check
+# 获取项目根目录的绝对路径
+PROJECT_ROOT=$(pwd)
 
-echo "Format check passed!"
+set -e
+
+echo "格式化代码..."
+
+# 运行 rustfmt
+cargo fmt
+
+echo "格式化完成"

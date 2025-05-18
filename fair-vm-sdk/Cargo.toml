@@ -1,0 +1,41 @@
+[package]
+name = "fair-vm-sdk"
+version = "0.1.0"
+edition = "2021"
+authors = ["Super Fair VM Team"]
+license = "Apache-2.0"
+
+[dependencies]
+fair-vm = { path = "../fair-vm" }
+tokio = { version = "1.36", features = ["full", "macros", "rt-multi-thread"] }
+avalanche-types.workspace = true
+ethers.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }
+semver = "1.0"
+url = "2.5.0"
+hex = { workspace = true }
+reqwest = { version = "0.11", features = ["json"] }
+tempfile = "3.2"
+aes-gcm = "0.10"
+argon2 = "0.5"
+rand = { workspace = true }
+ecdsa = "0.16"
+k256 = "0.13"
+rlp = "0.5"
+generic-array = "0.14"
+typenum = "1.16"
+futures-util = "0.3"
+futures = "0.3"
+mockall = "0.12.0"
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full", "test-util"] }
+tokio-test = "0.4"
+log = { workspace = true }
+env_logger = { workspace = true }
+secp256k1 = { workspace = true }
+bytes = { workspace = true } 

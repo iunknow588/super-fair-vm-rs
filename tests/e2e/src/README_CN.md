@@ -1,22 +1,48 @@
-# 端到端测试源代码
+# FairVM 端到端测试
 
-本目录包含 timestampvm 端到端测试的源代码。
+本目录包含 FairVM 端到端测试的源代码。
 
-## 文件结构
+## 目录结构
 
-- `lib.rs` - 测试库入口点，提供辅助函数
-- `tests/` - 包含测试用例
-  - `mod.rs` - 端到端测试实现
+```
+.
+├── tests/           # 测试用例
+│   ├── mod.rs      # 测试模块定义
+│   └── README_CN.md # 测试说明文档
+└── main.rs         # 测试入口
+```
 
-## 功能概述
+## 测试内容
 
-### lib.rs
+- 虚拟机初始化
+- 区块构建和验证
+- 状态管理
+- API 服务
+- 客户端交互
+- 创世区块处理
 
-提供端到端测试的辅助函数：
+## 环境要求
 
-- `get_network_runner_grpc_endpoint` - 获取 network-runner 的 gRPC 端点
-- `get_vm_plugin_path` - 获取 VM 插件的路径
-- `get_avalanchego_path` - 获取 AvalancheGo 可执行文件的路径
-- `get_network_runner_enable_shutdown` - 检查是否应在测试后关闭网络
+- Rust 1.70.0 或更高版本
+- [protoc](https://grpc.io/docs/protoc-installation/) 3.15.0 或更高版本
+- AvalancheGo 节点
 
-这些函数从环境变量中读取配置，使测试更加灵活和可配置。
+## 运行测试
+
+```bash
+# 运行所有测试
+cargo test
+
+# 运行特定测试
+cargo test test_name
+
+# 运行端到端测试
+./scripts/tests.e2e.sh
+```
+
+## 注意事项
+
+- 确保所有依赖都正确安装
+- 建议在测试环境中运行
+- 测试可能需要较长时间
+- 确保有足够的系统资源
